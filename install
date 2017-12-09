@@ -158,6 +158,20 @@ function _make_dirs() {
     egood "Created $count default directories"
 }
 
+# If we're managing this bashrc, then source it to load all the plugins.
+function _maybe_source_bashrc() {
+    for link_spec in "${FILE_LINKS[@]}" ; do
+        spec=$(echo "$link_spec" | tr -s ' ')
+        link=${spec#* }
+        # shellcheck disable=SC2088
+        if [ "$link" = "~/.bashrc" ]; then
+            echo -e "Sourcing .bashrc"
+            . ~/.bashrc
+            estatus
+        fi
+    done
+}
+
 force_chef_run="false"
 while getopts f opt
 do
@@ -176,3 +190,4 @@ _make_dirs
 _make_links
 _prep_scripts
 _run_installers
+_maybe_source_bashrc

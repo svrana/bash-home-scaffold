@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# An enumeration of useful colors and other color related
-# utilities.
+# An enumeration of colors and column width calculation.
 #
 
 if tty -s ; then
@@ -30,7 +29,6 @@ if ! ${use_color} ; then
     export WARN=
     export BAD=
     export NORMAL=
-    export HILITE=
     export BRACKET=
 else
     export RED='\e[38;5;198m'
@@ -39,6 +37,5 @@ else
     export BAD=$RED
     export WARN='\E[33;01m'
     export NORMAL='\E[0m'
-    export HILITE='\E[36;01m'
     export BRACKET='\E[34;01m'
 fi

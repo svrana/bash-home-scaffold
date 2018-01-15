@@ -101,7 +101,8 @@ function _prep_scripts() {
 function _chef_bootstrap() {
     local force=${1:-"false"}
 
-    local first_run=$(which chef-solo)
+    local first_run
+    first_run=$(which chef-solo)
     if [ -z "$first_run" ]; then
         curl -L https://omnitruck.chef.io/install.sh -o "$TMP/install.sh"
         sudo bash /tmp/install.sh -P chefdk
@@ -122,14 +123,14 @@ function _chef_bootstrap() {
 # DIR_LINKS arrays.
 #
 function _make_links() {
-    declare -i count=0
+    local -i count=0
     local spec
     for link_spec in "${DIR_LINKS[@]}" ; do
         spec=$(echo "$link_spec" | tr -s ' ')
         local target=${spec%% *}
         local link=${spec#* }
         ln -Tsf "$target" "$link"
-        count=(count+1)
+        count=$((count+1))
     done
     egood "Created $count directory links"
     count=0
@@ -138,8 +139,14 @@ function _make_links() {
         spec=$(echo "$link_spec" | tr -s ' ')
         local target=${spec%% *}
         local link=${spec#* }
-        ln -sf "$target" "${link/#~/$HOME}" # expand ~/ to $HOME
-        count=(count+1)
+        link=${link/#~/$HOME} # expand ~/ to $HOME
+        local len=${#HOME}
+        if [ "$HOME" = "${link:0:len}" ]; then
+            ln -sf "$target" "$link"
+        else
+            sudo ln -sf "$target" "$link"
+        fi
+        count=$((count+1))
     done
 
     egood "Created $count file links"
@@ -149,10 +156,10 @@ function _make_links() {
 # Create each direcctory specified in the CREATE_DIRS array.
 #
 function _make_dirs() {
-    declare -i count=0
+    local -i count=0
     for dir in "${CREATE_DIRS[@]}" ; do
         mkdir -p "${dir/#~/$HOME}"
-        count=(count+1)
+        count=$((count+1))
     done
 
     egood "Created $count default directories"

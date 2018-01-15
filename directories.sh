@@ -6,15 +6,7 @@
 # placed in the right place.
 
 export TMP=/tmp
-export CLOUD_ROOT=~/Cloud
-export PHOTOS=~/Pictures
 export BIN_DIR=~/.local/bin
-export DOCUMENTS=~/Documents
-export DOWNLOADS=~/Downloads
-export MUSIC=~/Music
-export PROJECTS=~/Projects
-export APPS=~/Apps
-
 
 cwd="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

@@ -6,15 +6,17 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-_install_deps=(
-    directories.sh  # directory names are used throughout
-    functions.sh    # used for helper functions
+_scaffold_deps=(
+    helpers.sh    # used for helper functions
+    config.sh
 )
 
 # Must have directories set so applications no where to be installed
-for dep in "${_install_deps[@]}" ; do
+for dep in "${_scaffold_deps[@]}" ; do
     . "$CURRENT_DIR/$dep"
 done
+
+scaffold_config_check || exit 1
 
 # A list of installers in $DOTFILES/installers that will be sourced during
 # install. These are typically actions that need only be done once and for
@@ -22,32 +24,39 @@ done
 #
 # All installers with the same name of a plugin in your DOTFILES_PLUGINS
 # are sourced automatically.
-INSTALLERS=(
-)
+if [ -z "$INSTALLERS" ]; then
+    INSTALLERS=(
+    )
+fi
 
 # A list of directories that should be created.
-CREATE_DIRS=(
-#    $BIN_DIR
-)
+if [ -z "$CREATE_DIRS" ]; then
+    CREATE_DIRS=(
+    #    $BIN_DIR
+    )
+fi
 
-# A list of symbolic links that point to directories that should be created.
-DIR_LINKS=(
-    # Target                        Link name
-)
+if [ -z "$DIR_LINKS" ]; then
+    DIR_LINKS=(
+        # Target                        Link name
+    )
+fi
 
 # A list of symbolic links pointing to files that should be created.
-FILE_LINKS=(
-    # Target                        Link name
-    #"${RCS}/bash_profile         ~/.bash_profile"
-    #"${RCS}/bashrc               ~/.bashrc"
-)
+if [ -z "$FILE_LINKS" ]; then
+    FILE_LINKS=(
+        # Target                        Link name
+        #"${RCS}/bash_profile         ~/.bash_profile"
+        #"${RCS}/bashrc               ~/.bashrc"
+    )
+fi
 
 #
 # Runs each of the installers specified in the INSTALLERS array.
 #
 function _run_installers() {
     local plugins
-    plugins=$(sed -rn '/export DOTFILE_PLUGINS=\(.*/','/\)/'p "$RCS/bashrc" | \
+    plugins=$(sed -rn '/export DOTFILE_PLUGINS=\(.*/','/\)/'p "$DOTFILES_BASHRC" | \
         sed 's/#.*//' | sed 's/export DOTFILE_PLUGINS=(//' | tr -d ')\n')
 
     for plugin in $plugins ; do
@@ -100,18 +109,27 @@ function _prep_scripts() {
 #
 function _chef_bootstrap() {
     local force=${1:-"false"}
-
     local first_run
     first_run=$(which chef-solo)
+
     if [ -z "$first_run" ]; then
-        curl -L https://omnitruck.chef.io/install.sh -o "$TMP/install.sh"
+        local TEMPDIR
+        TEMPDIR=$(mktemp -d)
+        curl -L https://omnitruck.chef.io/install.sh -o "$TEMPDIR/install.sh"
         sudo bash /tmp/install.sh -P chefdk
         estatus "Installed chefdk"
-        rm /tmp/install.sh > /dev/null 2>&1
+        rm -rf "$TEMPDIR"
+        cp -r "$CURRENT_DIR/chef" "$DOTFILES"
+        mkdir -p "$DOTFILES/scripts"
+        cp chef-up "$DOTFILES/scripts"
     fi
 
     if [[ -z "$first_run" || "$force" = "true" ]]; then
-        "$DOTFILES/scripts/chef-up"
+        if ! command chef-up 2>/dev/null ; then
+            "$CURRENT_DIR/chef-up"
+        else
+            chef-up
+        fi
         estatus "Ran chef-solo"
     else
         egood "Skipped chef-solo run (use -f to force)"

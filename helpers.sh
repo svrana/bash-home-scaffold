@@ -32,10 +32,7 @@ function dolisting() {
 
         if [[ ! -d ${x} ]] && [[ -L ${x} || -f ${x} ]] ; then
             mylist="${mylist} $(ls "${x}" 2> /dev/null)"
-        else
-            [[ ${x%/} != "${x}" ]] && x=${x%/}
-
-            cd "${x}"; tmpstr=$(ls)
+        else [[ ${x%/} != "${x}" ]] && x=${x%/} cd "${x}"; tmpstr=$(ls)
 
             for y in ${tmpstr} ; do
                 mylist="${mylist} ${x}/${y}"
@@ -74,53 +71,4 @@ function estatus() {
     else
         ebad "$*"
     fi
-}
-
-# Remove all invalid directories from PATH
-#
-# @return String PATH
-function PATH_clean() {
-    local ruby_path=$(which ruby)
-    if [ -z "$ruby_path" ]; then
-        ebad "Could not find ruby!!" >&2
-        return
-    fi
-
-    ruby -e "puts ENV['PATH'].split(':') \
-        .inject([]) { |r,k| r << k if File.exist?(k) ; r } \
-        .join(':')"
-}
-
-function PATH_prepend() {
-    [ -z "$1" ] && return
-
-    paths=$(echo "$1" | tr ":" "\n")
-    for path in $paths ; do
-        echo "GOT PATH element: $path"
-        if [ "${PATH#*${path}}" = "${PATH}" ]; then
-            export PATH=$path:$PATH
-        fi
-    done
-}
-
-function PATH_append() {
-    [ -z "$1" ] && return
-
-    paths=$(echo "$1" | tr ":" "\n")
-    for path in $paths ; do
-        if [ "${PATH#*${path}}" = "${PATH}" ]; then
-            export PATH=$PATH:$path
-        fi
-    done
-}
-
-function CDPATH_append() {
-    [ -z "$1" ] && return
-
-    paths=$(echo "$1" | tr ":" "\n")
-    for path in $paths ; do
-        if [ "${CDPATH#*${path}}" = "${PATH}" ]; then
-            export CDPATH=$CDPATH:$path
-        fi
-    done
 }

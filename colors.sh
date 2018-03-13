@@ -26,7 +26,6 @@ if ! ${use_color} ; then
     export RED=
     export green=
     export GOOD=
-    export WARN=
     export BAD=
     export NORMAL=
     export BRACKET=
@@ -35,7 +34,6 @@ else
     export green='\e[38;5;82m'
     export GOOD=$green
     export BAD=$RED
-    export WARN='\E[33;01m'
     export NORMAL='\E[0m'
     export BRACKET='\E[34;01m'
 fi

@@ -9,10 +9,8 @@
 #
 function dotfiles_load_deps() {
     CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    source "$CURRENT_DIR/directories.sh"
-    source "$CURRENT_DIR/functions.sh"
-
-    PATH_append "$BIN_DIR"
+    source "$CURRENT_DIR/helpers.sh"
+    source "$CURRENT_DIR/config.sh"
 }
 
 #

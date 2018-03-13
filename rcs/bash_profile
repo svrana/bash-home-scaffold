@@ -1,5 +1,0 @@
-[ -f ~/.bashrc ] && . ~/.bashrc
-
-# Warning: Color name "S_base03" is not defined (to remove the above warning
-# message)
-#xrdb -merge ~/.Xresources > /dev/null 2>&1

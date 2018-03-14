@@ -72,3 +72,14 @@ function estatus() {
         ebad "$*"
     fi
 }
+
+function PATH_append() {
+    [ -z "$1" ] && return
+
+    paths=$(echo "$1" | tr ":" "\n")
+    for path in $paths ; do
+        if [ "${PATH#*${path}}" = "${PATH}" ]; then
+            export PATH=$PATH:$path
+        fi
+    done
+}

@@ -89,16 +89,18 @@ function _prep_scripts() {
     local scripts="$DOTFILES/scripts"
     local -i count=0
 
-    for i in $(dolisting "$scripts"/*) ; do
+    for i in ${scripts}/* ; do
+        [ -e "$i" ] || continue
         chmod +x "$i"
         count=$((count+1))
     done
     egood "Added execute permission to $count scripts in ${scripts/$HOME\//\~/}"
     count=0
 
-    for i in $(dolisting "$scripts/*") ; do
-        i=$(basename "$i")
-        ln -sf "${scripts}/$i" "${BIN_DIR}/$i"
+    for i in ${scripts}/* ; do
+        [ -e "$i" ] || continue
+        local filename=${i##*/}
+        ln -sf "$i" "${BIN_DIR}/$filename"
         count=$((count+1))
     done
     egood "Created $count links to scripts in ${scripts/$HOME\//\~/} in ${BIN_DIR/$HOME\//\~/}"

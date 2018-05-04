@@ -218,3 +218,6 @@ _make_links
 _prep_scripts
 _run_installers
 _maybe_source_bashrc
+
+unset CURRENT_DIR
+unset _scaffold_deps

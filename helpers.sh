@@ -4,8 +4,11 @@
 #   https://github.com/gentoo/gentoo-functions/blob/master/functions.sh
 #
 
-CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-source "$CURRENT_DIR/colors.sh"
+function _load_deps() {
+    local CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+    source "$CURRENT_DIR/colors.sh"
+}
+_load_deps
 
 # Safer way to list the contents of a directory as it doesn't have the 'empty
 # dir bug'.

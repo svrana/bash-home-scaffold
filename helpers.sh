@@ -40,10 +40,18 @@ function estatus() {
     fi
 }
 
+
+# Usage: split "string" "delimiter"
+function split() {
+   IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
+   printf '%s\n' "${arr[@]}"
+}
+
+
 function PATH_append() {
     [ -z "$1" ] && return
 
-    paths=$(echo "$1" | tr ":" "\n")
+    paths=$(split "$1" ":")
     for path in $paths ; do
         if [ "${PATH#*${path}}" = "${PATH}" ]; then
             export PATH=$PATH:$path

@@ -11,8 +11,8 @@ _scaffold_deps=(
     config.sh
 )
 
-# Must have directories set so applications no where to be installed
 for dep in "${_scaffold_deps[@]}" ; do
+     # shellcheck source=/dev/null
     . "$CURRENT_DIR/$dep"
 done
 
@@ -63,6 +63,7 @@ function _run_installers() {
         local installer="$DOTFILES/installers/$plugin.sh"
         if [ -f "$installer" ]; then
             echo -n "Configuring $plugin"
+            # shellcheck source=/dev/null
             source "$installer"
             estatus
         fi
@@ -75,6 +76,7 @@ function _run_installers() {
             return 1
         fi
         echo -n "Configuring $installer"
+        # shellcheck source=/dev/null
         source "$location"
         estatus
     done

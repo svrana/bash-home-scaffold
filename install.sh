@@ -162,6 +162,11 @@ function _make_links() {
         local target=${spec%% *}
         local link=${spec#* }
         link=${link/#~/$HOME} # expand ~/ to $HOME
+
+        # Check for hostname specific overrides and and
+        if [ -f "$target.${HOSTNAME}" ]; then
+            target="$target.${HOSTNAME}"
+        fi
         local len=${#HOME}
         if [ "$HOME" = "${link:0:len}" ]; then
             ln -sf "$target" "$link"

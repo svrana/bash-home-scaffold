@@ -93,16 +93,21 @@ function _prep_scripts() {
     local i
     local scripts="$DOTFILES/scripts"
     local -i count=0
+    local -i total=0
 
     for i in ${scripts}/* ; do
-        [ -e "$i" ] || continue
         if [ ! -e "$i" ]; then
             chmod +x "$i"
             count=$((count+1))
         fi
+        total=$((count+1))
     done
-    egood "Added execute permission to $count scripts in ${scripts/$HOME\//\~/}"
+    if [ $count -gt 0 ]; then
+        egood "Added execute permission to $count scripts in ${scripts/$HOME\//\~/}"
+    fi
+
     count=0
+    total=0
 
     for i in ${scripts}/* ; do
         [ -e "$i" ] || continue
@@ -113,7 +118,9 @@ function _prep_scripts() {
             count=$((count+1))
         fi
     done
-    egood "Created $count links to scripts in ${scripts/$HOME\//\~/} in ${BIN_DIR/$HOME\//\~/}"
+    if [ $count -gt 0 ]; then
+        egood "Created $count links to scripts in ${scripts/$HOME\//\~/} in ${BIN_DIR/$HOME\//\~/}"
+    fi
 }
 
 #
@@ -182,7 +189,9 @@ function _make_links() {
             ebad "_make_links: target DIR_LINK ${target} does not exist"
         fi
     done
-    egood "Created $count of $total directory links"
+    if [ $count -gt 0 ]; then
+        egood "Created $count of $total directory links"
+    fi
     count=0
     total=0
 
@@ -212,7 +221,9 @@ function _make_links() {
         fi
     done
 
-    egood "Created $count of $total file links"
+    if [ $count -gt 0 ]; then
+        egood "Created $count of $total file links"
+    fi
     return 0
 }
 
@@ -233,7 +244,9 @@ function _make_dirs() {
         total=$((total+1))
     done
 
-    egood "Created $count of $total default directories"
+    if [ $count -gt 0 ]; then
+        egood "Created $count of $total default directories"
+    fi
     return 0
 }
 

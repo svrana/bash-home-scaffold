@@ -4,6 +4,9 @@
 # Runs installers.
 #
 
+set -e
+
+force_chef_run="false"
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 _scaffold_deps=(
@@ -93,8 +96,10 @@ function _prep_scripts() {
 
     for i in ${scripts}/* ; do
         [ -e "$i" ] || continue
-        chmod +x "$i"
-        count=$((count+1))
+        if [ ! -e "$i" ]; then
+            chmod +x "$i"
+            count=$((count+1))
+        fi
     done
     egood "Added execute permission to $count scripts in ${scripts/$HOME\//\~/}"
     count=0
@@ -102,8 +107,11 @@ function _prep_scripts() {
     for i in ${scripts}/* ; do
         [ -e "$i" ] || continue
         local filename=${i##*/}
-        ln -sf "$i" "${BIN_DIR}/$filename"
-        count=$((count+1))
+
+        if ! link_matches "${BIN_DIR}/$filename" "$i"  ; then
+            ln -sf "$i" "${BIN_DIR}/$filename"
+            count=$((count+1))
+        fi
     done
     egood "Created $count links to scripts in ${scripts/$HOME\//\~/} in ${BIN_DIR/$HOME\//\~/}"
 }
@@ -141,21 +149,42 @@ function _chef_bootstrap() {
 }
 
 #
+# Determine if the filename passed in as the first argument is a link that
+# is pointing at the second argument.
+function link_matches() {
+    local link=$1
+    local target=$2
+    if [ -L "$link" ] && [ "$(readlink "$link")" == "$target" ]; then
+        return 0
+    fi
+    return 1
+}
+
+#
 # Create a symbolic link for each entry speciied in the FILE_LINKS and
 # DIR_LINKS arrays.
 #
 function _make_links() {
     local -i count=0
+    local -i total=0
     local spec
     for link_spec in "${DIR_LINKS[@]}" ; do
         spec=$(echo "$link_spec" | tr -s ' ')
         local target=${spec%% *}
         local link=${spec#* }
-        ln -Tsf "$target" "$link"
-        count=$((count+1))
+        if [ -d "$target" ]; then
+            if ! link_matches "$link" "$target"  ; then
+                ln -Tsf "$target" "$link"
+                count=$((count+1))
+            fi
+            total=$((total+1))
+        else
+            ebad "_make_links: target DIR_LINK ${target} does not exist"
+        fi
     done
-    egood "Created $count directory links"
+    egood "Created $count of $total directory links"
     count=0
+    total=0
 
     for link_spec in "${FILE_LINKS[@]}" ; do
         spec=$(echo "$link_spec" | tr -s ' ')
@@ -168,15 +197,23 @@ function _make_links() {
             target="$target.${HOSTNAME}"
         fi
         local len=${#HOME}
-        if [ "$HOME" = "${link:0:len}" ]; then
-            ln -sf "$target" "$link"
+        if [ -f "$target" ]; then
+            if ! link_matches "$link" "$target"  ; then
+                if [ "$HOME" = "${link:0:len}" ]; then
+                    ln -sf "$target" "$link"
+                else
+                    sudo ln -sf "$target" "$link"
+                fi
+                count=$((count+1))
+            fi
+            total=$((total+1))
         else
-            sudo ln -sf "$target" "$link"
+            ebad "_make_links: target FILE_LINK ${target} does not exist"
         fi
-        count=$((count+1))
     done
 
-    egood "Created $count file links"
+    egood "Created $count of $total file links"
+    return 0
 }
 
 #
@@ -184,12 +221,20 @@ function _make_links() {
 #
 function _make_dirs() {
     local -i count=0
+    local -i total=0
     for dir in "${CREATE_DIRS[@]}" ; do
-        mkdir -p "${dir/#~/$HOME}"
-        count=$((count+1))
+        if [ ! -d "${dir/#~/$HOME}" ]; then
+            if ! mkdir -p "${dir/#~/$HOME}" ; then
+                ebad "_make_dirs: error creating ${dir/#~/$HOME} directory"
+                return 1
+            fi
+            count=$((count+1))
+        fi
+        total=$((total+1))
     done
 
-    egood "Created $count default directories"
+    egood "Created $count of $total default directories"
+    return 0
 }
 
 # If we're managing this bashrc, then source it to load all the plugins.
@@ -206,25 +251,34 @@ function _maybe_source_bashrc() {
     done
 }
 
-force_chef_run="false"
-while getopts f opt
-do
-    case "$opt" in
-        f)  force_chef_run="true";;
-        \?)   # unknown flag
-            echo >&2 \
-                "usage: $0 [-f force chef-solo run ]"
-            exit 1;;
-    esac
-done
-shift "$((OPTIND-1))"
+main() {
+    while getopts f opt
+    do
+        case "$opt" in
+            f)  force_chef_run="true";;
+            \?)   # unknown flag
+                echo >&2 \
+                    "usage: $0 [-f force chef-solo run ]"
+                exit 1;;
+        esac
+    done
+    shift "$((OPTIND-1))"
 
-_chef_bootstrap "$force_chef_run"
-_make_dirs
-_make_links
-_prep_scripts
-_run_installers
-_maybe_source_bashrc
+    _chef_bootstrap "$force_chef_run"
+    if ! _make_dirs ; then
+        ebad "error creating directories, premature exit"
+        return
+    fi
+    if ! _make_links; then
+        ebad "error creating links, premature exit"
+        return
+    fi
+    _prep_scripts
+    _run_installers
+    _maybe_source_bashrc
+}
+main
 
 unset CURRENT_DIR
+unset force_chef_run
 unset _scaffold_deps

@@ -11,7 +11,7 @@ function dotfiles_load_deps() {
     local CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     source "$CURRENT_DIR/helpers.sh"
     source "$CURRENT_DIR/config.sh"
-    PATH_append "$BIN_DIR"
+    PATH_prepend "$BIN_DIR"
 }
 
 #

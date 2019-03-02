@@ -1,76 +1,4 @@
-#!/bin/bash
-#
-# Many of these from gentoo @
-#   https://github.com/gentoo/gentoo-functions/blob/master/functions.sh
-#
-
-function _load_deps() {
-    local CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-    source "$CURRENT_DIR/colors.sh"
-}
-_load_deps
-
-# void ebox(void)
-# 	indicates a failure in a "box"
-function ebox() {
-    echo -e "${ENDCOL}  ${BRACKET}[ ${BAD}!!${BRACKET} ]${NORMAL}"
-}
-
-# void sbox(void)
-# 	indicates a success in a "box"
-function sbox() {
-    echo -e "${ENDCOL}  ${BRACKET}[ ${GOOD}ok${BRACKET} ]${NORMAL}"
-}
-
-function egood() {
-    echo "$*"
-    sbox
-}
-
-function ebad() {
-    echo "$*"
-    ebox
-}
-
-function estatus() {
-    if [ $? -eq 0 ]; then
-        egood "$*"
-    else
-        ebad "$*"
-    fi
-}
-
-
-# Usage: split "string" "delimiter"
-function split() {
-   IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
-   printf '%s\n' "${arr[@]}"
-}
-
-
-function PATH_append() {
-    [ -z "$1" ] && return
-
-    paths=$(split "$1" ":")
-    for path in $paths ; do
-        if [ "${PATH#*${path}}" = "${PATH}" ]; then
-            export PATH=$PATH:$path
-        fi
-    done
-}
-
-
-function PATH_prepend() {
-    [ -z "$1" ] && return
-
-    local paths
-    paths=$(split "$1" ":")
-    for path in $paths ; do
-        if [ "${PATH#*${path}}" = "${PATH}" ]; then
-            export PATH=$path:$PATH
-        fi
-    done
-}
+#from https://github.com/alrra/dotfiles/blob/master/src/os/utils.sh
 
 download() {
     local url="$1"
@@ -96,17 +24,6 @@ download() {
     fi
 
     return 1
-}
-
-
-kill_all_subprocesses() {
-    local i=""
-
-    for i in $(jobs -p); do
-        kill "$i"
-        wait "$i" &> /dev/null
-    done
-
 }
 
 execute() {
@@ -260,7 +177,7 @@ print_question() {
 
 print_result() {
     if [ "$1" -eq 0 ]; then
-        "$2"
+        print_success "$2"
     else
         print_error "$2"
     fi
@@ -281,6 +198,7 @@ set_trap() {
     trap -p "$1" | grep "$2" &> /dev/null \
         || trap '$2' "$1"
 }
+
 
 add_key() {
     wget -qO - "$1" | sudo apt-key add - &> /dev/null
@@ -318,7 +236,7 @@ install_package() {
         #                                      suppress output ─┘│
         #            assume "yes" as the answer to all prompts ──┘
     else
-        egood "$PACKAGE_READABLE_NAME"
+        print_success "$PACKAGE_READABLE_NAME"
     fi
 
 }
@@ -327,3 +245,20 @@ package_is_installed() {
     dpkg -s "$1" &> /dev/null
 }
 
+update() {
+    # Resynchronize the package index files from their sources.
+    execute \
+        "sudo apt-get update -qqy" \
+        "APT (update)"
+
+}
+
+upgrade() {
+    # Install the newest versions of all packages installed.
+
+    execute \
+        "export DEBIAN_FRONTEND=\"noninteractive\" \
+            && sudo apt-get -o Dpkg::Options::=\"--force-confnew\" upgrade -qqy" \
+        "APT (upgrade)"
+
+}

@@ -54,6 +54,24 @@ if [ -z "$FILE_LINKS" ]; then
     )
 fi
 
+if [ -z "$PACKAGE_LIST" ]; then
+    PACKAGE_LIST=(
+        # name of ubuntu package to install
+    )
+fi
+
+if [ -z "$GLOBAL_NODE_PACKAGES" ]; then
+    GLOBAL_NODE_PACKAGES=(
+        # name of ubuntu package to install
+    )
+fi
+
+if [ -z "$GLOBAL_GEMS" ]; then
+    GLOBAL_GEMS=(
+        # name of ubuntu package to install
+    )
+fi
+
 #
 # Runs each of the installers specified in the INSTALLERS array.
 #
@@ -151,7 +169,9 @@ function _chef_bootstrap() {
         fi
         estatus "Ran chef-solo"
     else
+        echo -n "foo"
         egood "Skipped chef-solo run (use -f to force)"
+        return 1
     fi
 }
 
@@ -264,6 +284,14 @@ function _maybe_source_bashrc() {
     done
 }
 
+_install_packages() {
+    for package in "${PACKAGE_LIST[@]}" ; do
+        if ! install_package "$package" ; then
+            return 1
+        fi
+    done
+}
+
 main() {
     while getopts f opt
     do
@@ -278,14 +306,22 @@ main() {
     shift "$((OPTIND-1))"
 
     _chef_bootstrap "$force_chef_run"
+
+    if ! _install_packages; then
+        ebad "error installing packages, premature exit"
+        return
+    fi
+
     if ! _make_dirs ; then
         ebad "error creating directories, premature exit"
         return
     fi
+
     if ! _make_links; then
         ebad "error creating links, premature exit"
         return
     fi
+
     _prep_scripts
     _run_installers
     _maybe_source_bashrc

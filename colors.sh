@@ -16,7 +16,7 @@ COLS="${COLUMNS:-0}"            # bash's internal COLUMNS variable
 [ "$COLS" -gt 0 ] || COLS=80	# width of [ ok ] == 7
 
 if [ $use_color ]; then
-    ENDCOL='\033[A\033['$(( COLS - 8 ))'C'
+    ENDCOL='\033[A\033['$(( COLS - 7 ))'C'
 else
     ENDCOL=''
 fi

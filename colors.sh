@@ -9,20 +9,19 @@ else
     use_color=false
 fi
 
-# Setup COLS and ENDCOL so eend can line up the [ ok ]
-COLS="${COLUMNS:-0}"            # bash's internal COLUMNS variable
-[ "$COLS" -eq 0 ] && COLS="$(set -- $(stty size 2>/dev/null) ; printf "$2\n")"
-[ -z "$COLS" ] && COLS=80
-[ "$COLS" -gt 0 ] || COLS=80	# width of [ ok ] == 7
+set_cols() {
+    # Setup COLS and ENDCOL so eend can line up the [ ok ]
+    COLS="${COLUMNS:-0}"            # bash's internal COLUMNS variable
+    [ "$COLS" -eq 0 ] && COLS="$(set -- $(stty size 2>/dev/null) ; printf "$2\n")"
 
-if [ $use_color ]; then
-    ENDCOL='\033[A\033['$(( COLS - 7 ))'C'
-    echo "endcol set to $(( COLS - 7 ))"
-else
-    echo "endcol not set"
-    ENDCOL=''
-fi
-export ENDCOL
+    if [ $use_color ]; then
+        ENDCOL='\033[A\033['$(( COLS - 7 ))'C'
+    else
+        ENDCOL=''
+    fi
+    export ENDCOL
+    export COL
+}
 
 if ! ${use_color} ; then
     export RED=

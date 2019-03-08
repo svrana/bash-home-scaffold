@@ -13,25 +13,27 @@ _load_deps
 # void ebox(void)
 # 	indicates a failure in a "box"
 ebox() {
+    set_cols
     echo -e "${ENDCOL} ${BRACKET}[ ${BAD}!!${BRACKET} ]${NORMAL}"
 }
 
 # void sbox(void)
 # 	indicates a success in a "box"
 sbox() {
+    set_cols
     echo -e "${ENDCOL} ${BRACKET}[ ${GOOD}ok${BRACKET} ]${NORMAL}"
 }
 
 egood() {
     if [ "$*" ]; then
-        echo -n "$*"
+        echo "$*"
     fi
     sbox
 }
 
 ebad() {
     if [ "$*" ]; then
-        echo -n "$*"
+        echo "$*"
     fi
     ebox
 }
@@ -49,7 +51,6 @@ split() {
    IFS=$'\n' read -d "" -ra arr <<< "${1//$2/$'\n'}"
    printf '%s\n' "${arr[@]}"
 }
-
 
 PATH_append() {
     [ -z "$1" ] && return
@@ -263,10 +264,12 @@ install_package() {
     declare -r PACKAGE="$1"
 
     if ! package_is_installed "$PACKAGE"; then
-        execute "sudo apt-get install --allow-unauthenticated -qqy $EXTRA_ARGUMENTS $PACKAGE" "$PACKAGE"
+        execute "sudo apt-get install --allow-unauthenticated -qqy $EXTRA_ARGUMENTS $PACKAGE" "Installing $PACKAGE"
         #execute "sleep 5" "$PACKAGE"
         #                                      suppress output ─┘│
         #            assume "yes" as the answer to all prompts ──┘
         #egood "Already installed $PACKAGE"
+    else
+        egood "Installed $PACKAGE"
     fi
 }

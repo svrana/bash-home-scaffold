@@ -83,7 +83,7 @@ function _run_installers() {
     for plugin in $plugins ; do
         local installer="$DOTFILES/installers/$plugin.sh"
         if [ -f "$installer" ]; then
-            echo -n "Configuring $plugin"
+            echo "Configuring $plugin"
             # shellcheck source=/dev/null
             source "$installer"
             estatus
@@ -94,9 +94,8 @@ function _run_installers() {
         local location="$DOTFILES/installers/${installer}.sh"
         if [ ! -f "$location" ]; then
             echo "Installer $installer missing"
-            return 1
         fi
-        echo -n "Configuring $installer"
+        echo "Configuring $installer"
         # shellcheck source=/dev/null
         source "$location"
         estatus
@@ -169,9 +168,7 @@ function _chef_bootstrap() {
         fi
         estatus "Ran chef-solo"
     else
-        echo -n "foo"
         egood "Skipped chef-solo run (use -f to force)"
-        return 1
     fi
 }
 

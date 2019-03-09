@@ -3,10 +3,24 @@
 # An enumeration of colors and column width calculation.
 #
 
-if tty -s ; then
-    use_color=true
-else
-    use_color=false
+if [ -z "$use_color" ]; then
+    if tty -s ; then
+        use_color=true
+        export RED='\e[38;5;198m'
+        export green='\e[38;5;82m'
+        export GOOD=$green
+        export BAD=$RED
+        export NORMAL='\E[0m'
+        export BRACKET='\E[34;01m'
+    else
+        use_color=false
+        export RED=
+        export green=
+        export GOOD=
+        export BAD=
+        export NORMAL=
+        export BRACKET=
+    fi
 fi
 
 set_cols() {
@@ -22,19 +36,3 @@ set_cols() {
     export ENDCOL
     export COL
 }
-
-if ! ${use_color} ; then
-    export RED=
-    export green=
-    export GOOD=
-    export BAD=
-    export NORMAL=
-    export BRACKET=
-else
-    export RED='\e[38;5;198m'
-    export green='\e[38;5;82m'
-    export GOOD=$green
-    export BAD=$RED
-    export NORMAL='\E[0m'
-    export BRACKET='\E[34;01m'
-fi

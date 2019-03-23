@@ -2,6 +2,7 @@
 #
 # Many of these from gentoo @
 #   https://github.com/gentoo/gentoo-functions/blob/master/functions.sh
+# execute from:
 #
 
 
@@ -225,20 +226,14 @@ show_spinner() {
 }
 
 print_error() {
-    print_in_red "   [✖] $1 $2\n"
+    echo -e "$ ${BRACKET}[ ${BAD}!!${BRACKET} ]${NORMAL} $1 $2"
+
 }
 
 print_error_stream() {
     while read -r line; do
         print_error "↳ ERROR: $line"
     done
-}
-
-print_in_color() {
-    printf "%b" \
-        "$(tput setaf "$2" 2> /dev/null)" \
-        "$1" \
-        "$(tput sgr0 2> /dev/null)"
 }
 
 set_trap() {
@@ -288,16 +283,42 @@ package_is_installed() {
     dpkg -s "$1" &> /dev/null
 }
 
+npm_package_is_installed() {
+    npm -g ls "$1" &> /dev/null
+}
+
+install_npm_package() {
+    declare -r PACKAGE="$1"
+    if ! npm_package_is_installed "$PACKAGE"; then
+        execute "sudo npm -g install $PACKAGE" "Installing $PACKAGE with npm -g"
+    else
+        egood "Already installed global npm package $PACKAGE"
+    fi
+}
+
+gem_is_installed() {
+    gem list -i "$1" &> /dev/null
+
+}
+
+install_gem() {
+    declare -r GEM="$1"
+    if ! gem_is_installed "$GEM"; then
+        execute "sudo gem install $GEM" "Installing $GEM with gem"
+    else
+        egood "Already installed global gem $GEM"
+    fi
+}
+
 install_package() {
     declare -r EXTRA_ARGUMENTS="$2"
     declare -r PACKAGE="$1"
 
     if ! package_is_installed "$PACKAGE"; then
         execute "sudo apt-get install --allow-unauthenticated -qqy $EXTRA_ARGUMENTS $PACKAGE" "Installing $PACKAGE"
-        #execute "sleep 5" "$PACKAGE"
         #                                      suppress output ─┘│
         #            assume "yes" as the answer to all prompts ──┘
-        #egood "Already installed $PACKAGE"
+        #execute "sleep 5" "$PACKAGE"
     else
         egood "Already installed $PACKAGE"
     fi

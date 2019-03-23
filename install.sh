@@ -289,6 +289,22 @@ _install_packages() {
     done
 }
 
+_install_npm_packages() {
+    for package in "${GLOBAL_NODE_PACKAGES[@]}" ; do
+        if ! install_npm_package "$package" ; then
+            return 1
+        fi
+    done
+}
+
+_install_gems() {
+    for gem in "${GLOBAL_GEMS[@]}" ; do
+        if ! install_gem "$gem" ; then
+            return 1
+        fi
+    done
+}
+
 main() {
     while getopts f opt
     do
@@ -306,6 +322,16 @@ main() {
 
     if ! _install_packages; then
         ebad "error installing packages, premature exit"
+        return
+    fi
+
+    if ! _install_npm_packages; then
+        ebad "error installing global npm packages, premature exit"
+        return
+    fi
+
+    if ! _install_gems ; then
+        ebad "error installing gems, premature exit"
         return
     fi
 

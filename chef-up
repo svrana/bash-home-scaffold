@@ -1,2 +1,0 @@
-berks vendor -b $DOTFILES/chef/Berksfile $DOTFILES/.berkshelf && \
-sudo -H chef-solo -c $DOTFILES/chef/solo.rb -j $DOTFILES/chef/solo.json

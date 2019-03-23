@@ -6,7 +6,6 @@
 
 set -e
 
-force_chef_run="false"
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 _scaffold_deps=(
@@ -137,38 +136,6 @@ function _prep_scripts() {
     done
     if [ $count -gt 0 ]; then
         egood "Created $count links to scripts in ${scripts/$HOME\//\~/} in ${BIN_DIR/$HOME\//\~/}"
-    fi
-}
-
-#
-# Run chef solo. For system-wide changes, like packages.
-#
-function _chef_bootstrap() {
-    local force=${1:-"false"}
-    local first_run
-    first_run=$(which chef-solo)
-
-    if [ -z "$first_run" ]; then
-        local TEMPDIR
-        TEMPDIR=$(mktemp -d)
-        curl -L https://omnitruck.chef.io/install.sh -o "$TEMPDIR/install.sh"
-        sudo bash /tmp/install.sh -P chefdk
-        estatus "Installed chefdk"
-        rm -rf "$TEMPDIR"
-        cp -r "$CURRENT_DIR/chef" "$DOTFILES"
-        mkdir -p "$DOTFILES/scripts"
-        cp chef-up "$DOTFILES/scripts"
-    fi
-
-    if [[ -z "$first_run" || "$force" = "true" ]]; then
-        if ! command chef-up 2>/dev/null ; then
-            "$CURRENT_DIR/chef-up"
-        else
-            chef-up
-        fi
-        estatus "Ran chef-solo"
-    else
-        egood "Skipped chef-solo run (use -f to force)"
     fi
 }
 
@@ -305,20 +272,33 @@ _install_gems() {
     done
 }
 
+_install_ppas() {
+    local update="0"
+    for ppa_spec in "${PPA_LIST[@]}" ; do
+        ppa_spec=$(echo "$ppa_spec" | tr -s ' ')
+
+        IFS=$'\n' read -d "" -ra ppa <<< "${ppa_spec//' '/$'\n'}"
+        if ! add_to_source_list ${ppa[@]} ; then
+            update="1"
+        fi
+        if [ "$update" == "1" ]; then
+            execute "sudo apt update" "APT update"
+        fi
+    done
+}
+
 main() {
     while getopts f opt
     do
         case "$opt" in
-            f)  force_chef_run="true";;
-            \?)   # unknown flag
-                echo >&2 \
-                    "usage: $0 [-f force chef-solo run ]"
-                exit 1;;
         esac
     done
     shift "$((OPTIND-1))"
 
-    _chef_bootstrap "$force_chef_run"
+    if ! _install_ppas ; then
+         ebad "error installing ppas, premature exit"
+         return
+    fi
 
     if ! _install_packages; then
         ebad "error installing packages, premature exit"
@@ -352,5 +332,4 @@ main() {
 main
 
 unset CURRENT_DIR
-unset force_chef_run
 unset _scaffold_deps

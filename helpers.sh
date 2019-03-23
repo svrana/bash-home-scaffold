@@ -247,29 +247,28 @@ add_key() {
 }
 
 add_to_source_list() {
-    file="/etc/apt/sources.list.d/$1"
-    line="deb $2"
+    local -r name=$1 ; shift
+    local -r file="/etc/apt/sources.list.d/$name.list"
+    local line="deb \"$1\"" ; shift
+    line="$line $*"
 
-    if [ -z "$file" ]; then
+    if [ -z "$name" ]; then
         ebad "Must specify a name for the source to add"
         return 1
     fi
-    if [ -z "$2" ]; then
-        ebad "Must specify a source url for the ppa"
-        return 1
-    fi
 
-    if [ -f "file" ]; then
+    if [ -f "$file" ]; then
         if grep -qE "^$line$" "$file" ; then
             # file exists with the same content we want to add
-            egood "$1 exists in $file"
+            egood "$name ppa already exists at $file"
             return 0
         fi
         # file exists but doesn't have the source we want
-        sudo rm "$file"
+        sudo mv "$file"{,.save}
     fi
-    sudo sh -c "printf 'deb $2' >> '/etc/apt/sources.list.d/$1'"
-    estatus "Added $1 to $file"
+    sudo sh -c "printf '${line}\n' >> $file"
+    estatus "Added $name ppa at $file"
+    return 1
 }
 
 autoremove() {

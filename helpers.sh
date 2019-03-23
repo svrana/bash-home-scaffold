@@ -260,7 +260,7 @@ add_to_source_list() {
     if [ -f "$file" ]; then
         if grep -qE "^$line$" "$file" ; then
             # file exists with the same content we want to add
-            egood "$name ppa already exists at $file"
+            egood "Already installed PPA $name"
             return 0
         fi
         # file exists but doesn't have the source we want

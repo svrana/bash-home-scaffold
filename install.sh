@@ -76,6 +76,7 @@ fi
 #
 function _run_installers() {
     local plugins
+    # shellcheck disable=SC2026
     plugins=$(sed -rn '/export DOTFILE_PLUGINS=\(.*/','/\)/'p "$DOTFILES_BASHRC" | \
         sed 's/#.*//' | sed 's/export DOTFILE_PLUGINS=(//' | tr -d ')\n')
 
@@ -242,6 +243,7 @@ function _maybe_source_bashrc() {
         # shellcheck disable=SC2088
         if [ "$link" = "~/.bashrc" ]; then
             echo -e "Sourcing .bashrc"
+            # shellcheck disable=SC1090
             . ~/.bashrc
             estatus
         fi
@@ -278,6 +280,7 @@ _install_ppas() {
         ppa_spec=$(echo "$ppa_spec" | tr -s ' ')
 
         IFS=$'\n' read -d "" -ra ppa <<< "${ppa_spec//' '/$'\n'}"
+        # shellcheck disable=SC2068
         if ! add_to_source_list ${ppa[@]} ; then
             update="1"
         fi

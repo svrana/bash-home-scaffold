@@ -285,7 +285,7 @@ _install_ppas() {
             update="1"
         fi
         if [ "$update" == "1" ]; then
-            execute "sudo apt update" "APT update"
+            execute "sudo apt-get update" "APT update"
         fi
     done
 }

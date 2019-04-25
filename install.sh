@@ -88,7 +88,7 @@ fi
 #
 # Runs each of the installers specified in the INSTALLERS array.
 #
-function _run_installers() {
+_run_installers() {
     local plugins
     # shellcheck disable=SC2026
     plugins=$(sed -rn '/export DOTFILE_PLUGINS=\(.*/','/\)/'p "$DOTFILES_BASHRC" | \
@@ -120,7 +120,7 @@ function _run_installers() {
 # Link each script in ./scripts to a directory in your path specified by
 # $BIN_DIR.
 #
-function _prep_scripts() {
+_prep_scripts() {
     local i
     local scripts="$DOTFILES/scripts"
     local -i count=0
@@ -157,7 +157,7 @@ function _prep_scripts() {
 #
 # Determine if the filename passed in as the first argument is a link that
 # is pointing at the second argument.
-function link_matches() {
+link_matches() {
     local link=$1
     local target=$2
     if [ -L "$link" ] && [ "$(readlink "$link")" == "$target" ]; then
@@ -170,7 +170,7 @@ function link_matches() {
 # Create a symbolic link for each entry speciied in the FILE_LINKS and
 # DIR_LINKS arrays.
 #
-function _make_links() {
+_make_links() {
     local -i count=0
     local -i total=0
     local spec
@@ -229,7 +229,7 @@ function _make_links() {
 #
 # Create each direcctory specified in the CREATE_DIRS array.
 #
-function _make_dirs() {
+_make_dirs() {
     local -i count=0
     local -i total=0
     for dir in "${CREATE_DIRS[@]}" ; do
@@ -250,7 +250,7 @@ function _make_dirs() {
 }
 
 # If we're managing this bashrc, then source it to load all the plugins.
-function _maybe_source_bashrc() {
+_maybe_source_bashrc() {
     for link_spec in "${FILE_LINKS[@]}" ; do
         spec=$(echo "$link_spec" | tr -s ' ')
         link=${spec#* }

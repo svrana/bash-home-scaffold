@@ -284,10 +284,11 @@ _install_ppas() {
         if ! add_to_source_list ${ppa[@]} ; then
             update="1"
         fi
-        if [ "$update" == "1" ]; then
-            execute "sudo apt-get update" "APT update"
-        fi
     done
+
+    if [ "$update" == "1" ]; then
+        execute "sudo apt-get update" "APT update"
+    fi
 }
 
 main() {

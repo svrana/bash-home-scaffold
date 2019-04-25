@@ -11,6 +11,7 @@ CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 _scaffold_deps=(
     helpers.sh    # used for helper functions
     config.sh
+    utils.sh
 )
 
 for dep in "${_scaffold_deps[@]}" ; do
@@ -19,6 +20,19 @@ for dep in "${_scaffold_deps[@]}" ; do
 done
 
 scaffold_config_check || exit 1
+
+
+if [ -z "$PPA_KEYS" ]; then
+    PPA_KEYS=(
+    # name (descriptive only)   # keyserver     # key id
+    )
+fi
+
+if [ -z "$PPA_LIST" ]; then
+    PPA_LIST=(
+    # name  repository  extras
+    )
+fi
 
 # A list of installers in $DOTFILES/installers that will be sourced during
 # install. These are typically actions that need only be done once and for
@@ -275,19 +289,19 @@ _install_gems() {
 }
 
 _install_ppas() {
-    local update="0"
+    local needsUpdate="0"
     for ppa_spec in "${PPA_LIST[@]}" ; do
         ppa_spec=$(echo "$ppa_spec" | tr -s ' ')
 
         IFS=$'\n' read -d "" -ra ppa <<< "${ppa_spec//' '/$'\n'}"
         # shellcheck disable=SC2068
         if ! add_to_source_list ${ppa[@]} ; then
-            update="1"
+            needsUpdate="1"
         fi
     done
 
-    if [ "$update" == "1" ]; then
-        execute "sudo apt-get update" "APT update"
+    if [ "$needsUpdate" == "1" ]; then
+        update
     fi
 }
 

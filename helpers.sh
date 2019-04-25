@@ -2,7 +2,6 @@
 #
 # Many of these from gentoo @
 #   https://github.com/gentoo/gentoo-functions/blob/master/functions.sh
-# execute from:
 #
 
 
@@ -240,10 +239,43 @@ set_trap() {
     trap -p "$1" | grep "$2" &> /dev/null || trap '$2' "$1"
 }
 
-add_key() {
-    wget -qO - "$1" | sudo apt-key add - &> /dev/null
-    #     │└─ write output to file
-    #     └─ don't show output
+apt_key_installed() {
+    local -r first=${keyid:0:4}
+    local -r second=${keyid:4}
+
+    if apt-key fingerprint 2>/dev/null | grep -q "$first $second"; then
+        return 0
+    fi
+    return 1
+}
+
+apt_key_add() {
+    local name=$1
+    local keyserver=$2
+    local keyid=$3
+
+    if [ -z "$name" ]; then
+        ebad "apt_key_add: must specifiy a key name for descriptive purposes ($*)"
+        return 1
+    fi
+    if [ -z "$keyserver" ]; then
+        ebad "apt_key_add: must specifiy a keyserver from which to download key for $name"
+        return 1
+    fi
+    if [ -z "$keyid" ]; then
+        ebad "apt_key_add: Must specifiy a keyid for $name key. Last 8 chars of the key, concatenated"
+        return 1
+    fi
+
+    if ! apt_key_installed "$keyid" ; then
+        keyid=$(echo "$keyid" | tr -d ' ')
+        execute 'sudo apt-key adv --keyserver "$keyserver" --recv-keys "$keyid"' \
+            "Adding $name ppa key"
+        #estatus "Added gpg key from keyserver $keyserver for $name"
+    else
+       egood "Already installed gpg key for $name from $keyserver"
+    fi
+    return 0
 }
 
 add_to_source_list() {
@@ -303,7 +335,8 @@ gem_is_installed() {
 install_gem() {
     declare -r GEM="$1"
     if ! gem_is_installed "$GEM"; then
-        execute "sudo gem install $GEM" "Installing $GEM with gem"
+        execute "sudo gem install $GEM" \
+        "Installing $GEM with gem"
     else
         egood "Already installed global gem $GEM"
     fi
@@ -314,7 +347,8 @@ install_package() {
     declare -r PACKAGE="$1"
 
     if ! package_is_installed "$PACKAGE"; then
-        execute "sudo apt-get install --allow-unauthenticated -qqy $EXTRA_ARGUMENTS $PACKAGE" "Installing $PACKAGE"
+        execute "sudo apt-get install --allow-unauthenticated -qqy $EXTRA_ARGUMENTS $PACKAGE" \
+            "Installing $PACKAGE"
         #                                      suppress output ─┘│
         #            assume "yes" as the answer to all prompts ──┘
         #execute "sleep 5" "$PACKAGE"

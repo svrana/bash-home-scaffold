@@ -101,7 +101,6 @@ show_spinner() {
     # things correctly, it needs special treatment, hence,
     # the "is Travis CI?" checks.
     if [ "$TRAVIS" != "true" ]; then
-
         # Provide more space so that the text hopefully
         # doesn't reach the bottom line of the terminal window.
         #
@@ -199,18 +198,6 @@ set_trap() {
         || trap '$2' "$1"
 }
 
-
-add_key() {
-    wget -qO - "$1" | sudo apt-key add - &> /dev/null
-    #     │└─ write output to file
-    #     └─ don't show output
-
-}
-
-add_ppa() {
-    sudo add-apt-repository -y ppa:"$1" &> /dev/null
-}
-
 add_to_source_list() {
     sudo sh -c "printf 'deb $1' >> '/etc/apt/sources.list.d/$2'"
 }
@@ -218,15 +205,12 @@ add_to_source_list() {
 autoremove() {
     # Remove packages that were automatically installed to satisfy
     # dependencies for other packages and are no longer needed.
-
     execute \
         "sudo apt-get autoremove -qqy" \
         "APT (autoremove)"
-
 }
 
 install_package() {
-
     declare -r EXTRA_ARGUMENTS="$3"
     declare -r PACKAGE="$2"
     declare -r PACKAGE_READABLE_NAME="$1"
@@ -255,7 +239,6 @@ update() {
 
 upgrade() {
     # Install the newest versions of all packages installed.
-
     execute \
         "export DEBIAN_FRONTEND=\"noninteractive\" \
             && sudo apt-get -o Dpkg::Options::=\"--force-confnew\" upgrade -qqy" \

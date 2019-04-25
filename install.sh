@@ -291,6 +291,19 @@ _install_ppas() {
     fi
 }
 
+_install_ppa_keys() {
+    for ppa_key_spec in "${PPA_KEYS[@]}" ; do
+        ppa_key_spec=$(echo "$ppa_key_spec" | tr -s ' ')
+        IFS=$'\n' read -d "" -ra key_spec <<< "${ppa_key_spec//' '/$'\n'}"
+        # shellcheck disable=SC2068
+        if ! apt_key_add ${key_spec[@]} ; then
+            ebad "Error while adding key ppa key for $key_spec"
+            return 1
+        fi
+    done
+}
+
+
 main() {
     while getopts f opt
     do
@@ -299,39 +312,46 @@ main() {
     done
     shift "$((OPTIND-1))"
 
+    if ! _install_ppa_keys ; then
+         ebad "error installing ppa keys, premature exit"
+         return 1
+    fi
+
     if ! _install_ppas ; then
          ebad "error installing ppas, premature exit"
-         return
+         return 1
     fi
 
     if ! _install_packages; then
         ebad "error installing packages, premature exit"
-        return
+        return 1
     fi
 
     if ! _install_npm_packages; then
         ebad "error installing global npm packages, premature exit"
-        return
+        return 1
     fi
 
     if ! _install_gems ; then
         ebad "error installing gems, premature exit"
-        return
+        return 1
     fi
 
     if ! _make_dirs ; then
         ebad "error creating directories, premature exit"
-        return
+        return 1
     fi
 
     if ! _make_links; then
         ebad "error creating links, premature exit"
-        return
+        return 1
     fi
 
     _prep_scripts
     _run_installers
     _maybe_source_bashrc
+
+    return 0
 }
 main
 

@@ -9,15 +9,15 @@ set -e
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 _scaffold_deps=(
-    helpers.sh    # used for helper functions
+    helpers.sh
     config.sh
-    utils.sh
 )
 
 for dep in "${_scaffold_deps[@]}" ; do
      # shellcheck source=/dev/null
     . "$CURRENT_DIR/$dep"
 done
+unset _scaffold_deps
 
 scaffold_config_check || exit 1
 
@@ -292,7 +292,6 @@ _install_ppas() {
     local needsUpdate="0"
     for ppa_spec in "${PPA_LIST[@]}" ; do
         ppa_spec=$(echo "$ppa_spec" | tr -s ' ')
-
         IFS=$'\n' read -d "" -ra ppa <<< "${ppa_spec//' '/$'\n'}"
         # shellcheck disable=SC2068
         if ! add_to_source_list ${ppa[@]} ; then

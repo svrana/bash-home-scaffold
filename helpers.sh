@@ -259,7 +259,7 @@ apt_key_add() {
         return 1
     fi
     if [ -z "$keyserver" ]; then
-        ebad "apt_key_add: must specifiy a keyserver from which to download key for $name"
+        ebad "apt_key_add: must specify a keyserver from which to download key for $name"
         return 1
     fi
     if [ -z "$keyid" ]; then
@@ -279,7 +279,8 @@ apt_key_add() {
 }
 
 add_to_source_list() {
-    local -r name=$1 ; shift
+    local -r name="$1"
+    shift
     local -r file="/etc/apt/sources.list.d/$name.list"
     local line="deb \"$1\"" ; shift
     line="$line $*"
@@ -298,7 +299,7 @@ add_to_source_list() {
         # file exists but doesn't have the source we want
         sudo mv "$file"{,.save}
     fi
-    sudo sh -c "printf '${line}\n' >> $file"
+    #sudo sh -c "printf '${line}\n' >> $file"
     estatus "Added $name ppa at $file"
     return 1
 }
@@ -355,4 +356,12 @@ install_package() {
     else
         egood "Already installed $PACKAGE"
     fi
+}
+
+update() {
+    # Resynchronize the package index files from their sources.
+    execute \
+        "sudo apt-get update -qqy" \
+        "APT (update)"
+
 }

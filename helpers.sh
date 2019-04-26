@@ -299,7 +299,7 @@ add_to_source_list() {
         # file exists but doesn't have the source we want
         sudo mv "$file"{,.save}
     fi
-    #sudo sh -c "printf '${line}\n' >> $file"
+    sudo sh -c "printf '${line}\n' >> $file"
     estatus "Added $name ppa at $file"
     return 1
 }

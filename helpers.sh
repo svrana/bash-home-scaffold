@@ -28,7 +28,7 @@ fi
 set_cols() {
     # Setup COLS and ENDCOL so eend can line up the [ ok ]
     COLS="${COLUMNS:-0}"            # bash's internal COLUMNS variable
-    [ "$COLS" -eq 0 ] && COLS="$(set -- $(stty size 2>/dev/null) ; printf "$2\n")"
+    [ "$COLS" -eq 0 ] && COLS=$(tput cols)
 
     if [ $use_color ]; then
         ENDCOL='\033[A\033['$(( COLS - 7 ))'C'
@@ -226,7 +226,6 @@ show_spinner() {
 
 print_error() {
     echo -e "$ ${BRACKET}[ ${BAD}!!${BRACKET} ]${NORMAL} $1 $2"
-
 }
 
 print_error_stream() {
@@ -263,7 +262,7 @@ apt_key_add() {
         return 1
     fi
     if [ -z "$keyid" ]; then
-        ebad "apt_key_add: Must specifiy a keyid for $name key. Last 8 chars of the key, concatenated"
+        ebad "apt_key_add: Must specify a keyid for $name key. Last 8 chars of the key, concatenated"
         return 1
     fi
 

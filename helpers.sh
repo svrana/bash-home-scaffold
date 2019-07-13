@@ -165,6 +165,7 @@ execute() {
     estatus
 
     if [ $exitCode -ne 0 ]; then
+        print_error "execute: $CMDS"
         print_error_stream < "$TMP_FILE"
     fi
 
@@ -347,10 +348,7 @@ install_package() {
     declare -r PACKAGE="$1"
 
     if ! package_is_installed "$PACKAGE"; then
-        execute "sudo apt-get install --allow-unauthenticated -qqy $EXTRA_ARGUMENTS $PACKAGE" \
-            "Installing $PACKAGE"
-        #                                      suppress output ─┘│
-        #            assume "yes" as the answer to all prompts ──┘
+        execute "sudo apt-get install -qy $EXTRA_ARGUMENTS $PACKAGE" "Installing $PACKAGE"
         #execute "sleep 5" "$PACKAGE"
     else
         egood "Already installed $PACKAGE"

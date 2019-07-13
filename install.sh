@@ -101,6 +101,13 @@ _run_installers() {
             # shellcheck source=/dev/null
             source "$installer"
             estatus
+
+            # source the plugin after its installation so it can be used
+            # by subsequent plugins
+            local plugin="$DOTFILES/plugins/$plugin.sh"
+            if [ -f "$plugin" ]; then
+                source "$plugin"
+            fi
         fi
     done
 
@@ -108,11 +115,19 @@ _run_installers() {
         local location="$DOTFILES/installers/${installer}.sh"
         if [ ! -f "$location" ]; then
             echo "Installer $installer missing"
+            continue
         fi
         echo "Configuring $installer"
         # shellcheck source=/dev/null
         source "$location"
         estatus
+
+        # source the plugin after its installation so it can be used
+        # by subsequent plugins
+        local plugin="$DOTFILES/plugins/$installer.sh"
+        if [ -f "$plugin" ]; then
+            source "$plugin"
+        fi
     done
 }
 

@@ -106,7 +106,9 @@ _run_installers() {
             # by subsequent plugins
             local plugin="$DOTFILES/plugins/$plugin.sh"
             if [ -f "$plugin" ]; then
+                set +e
                 source "$plugin"
+                set -e
             fi
         fi
     done
@@ -126,7 +128,9 @@ _run_installers() {
         # by subsequent plugins
         local plugin="$DOTFILES/plugins/$installer.sh"
         if [ -f "$plugin" ]; then
+            set +e
             source "$plugin"
+            set -e
         fi
     done
 }

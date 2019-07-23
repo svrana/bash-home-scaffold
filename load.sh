@@ -7,7 +7,7 @@
 #
 # Source dependencies required for all plugins.
 #
-function dotfiles_load_deps() {
+dotfiles_load_deps() {
     local CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     source "$CURRENT_DIR/helpers.sh"
     source "$CURRENT_DIR/config.sh"
@@ -18,7 +18,7 @@ function dotfiles_load_deps() {
 #
 # Source machine specific configuration if available.
 #
-function dotfiles_load_box_config() {
+dotfiles_load_box_config() {
     overrides="$DOTFILES/boxen/$HOSTNAME.env"
     if [ -e "$overrides" ]; then
         . "$overrides"
@@ -28,7 +28,7 @@ function dotfiles_load_box_config() {
 #
 # Source private configs that cannot be added to the public repo.
 #
-function dotfiles_load_private_config() {
+dotfiles_load_private_config() {
     for file in "${DOTFILES}"/private/*.env ; do
         [ -e "$file" ] || continue
         . "$file"
@@ -41,7 +41,7 @@ function dotfiles_load_private_config() {
 #   --quiet : silence output related to loading plugin
 #   --path  : print the plugin path only (do not load plugin)
 #
-function dotfiles_plugin() {
+dotfiles_plugin() {
     local path_request=false
     local quiet=false
 
@@ -83,7 +83,7 @@ function dotfiles_plugin() {
 #
 # Load user specified plugins.
 #
-function dotfiles_load_plugins() {
+dotfiles_load_plugins() {
     [ -z "$DOTFILE_PLUGINS" ] && return
 
     local plugin

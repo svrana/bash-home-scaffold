@@ -312,7 +312,6 @@ _install_ppas() {
     for ppa_spec in "${PPA_LIST[@]}" ; do
         ppa_spec=$(echo "$ppa_spec" | tr -s ' ')
         IFS=$'\n' read -d "" -ra ppa <<< "${ppa_spec//' '/$'\n'}"
-        # shellcheck disable=SC2068
         if ! add_to_source_list ${ppa[@]} ; then
             needsUpdate="1"
         fi

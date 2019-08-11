@@ -343,6 +343,21 @@ install_gem() {
     fi
 }
 
+snap_is_installed() {
+    snap list "$1" &> /dev/null
+}
+
+install_snap() {
+    declare -r SNAP="$1"
+    if ! snap_is_installed "$SNAP"; then
+        execute "sudo snap install $SNAP" \
+        "Installing $SNAP with snap"
+    else
+        egood "Already installed snap $SNAP"
+    fi
+}
+
+
 install_package() {
     declare -r EXTRA_ARGUMENTS="$2"
     declare -r PACKAGE="$1"

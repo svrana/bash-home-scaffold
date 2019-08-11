@@ -85,6 +85,12 @@ if [ -z "$GLOBAL_GEMS" ]; then
     )
 fi
 
+if [ -z "$SNAPS" ]; then
+    SNAPS=(
+        # name of snap to install
+    )
+fi
+
 #
 # Runs each of the installers specified in the INSTALLERS array.
 #
@@ -307,6 +313,14 @@ _install_gems() {
     done
 }
 
+_install_snaps() {
+    for snap in "${SNAPS[@]}" ; do
+        if ! install_snap "$snap" ; then
+            return 1
+        fi
+    done
+}
+
 _install_ppas() {
     local needsUpdate="0"
     for ppa_spec in "${PPA_LIST[@]}" ; do
@@ -365,6 +379,11 @@ main() {
 
     if ! _install_gems ; then
         ebad "error installing gems, premature exit"
+        return 1
+    fi
+
+    if ! _install_snaps ; then
+        ebad "error installing snaps, premature exit"
         return 1
     fi
 

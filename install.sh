@@ -91,6 +91,12 @@ if [ -z "$SNAPS" ]; then
     )
 fi
 
+if [ -z "$GROUP_LIST" ]; then
+    GROUP_LIST=(
+        # name of group to add the user running the install script
+    )
+fi
+
 #
 # Runs each of the installers specified in the INSTALLERS array.
 #
@@ -321,6 +327,14 @@ _install_snaps() {
     done
 }
 
+_add_user_to_groups() {
+    for group in "${GROUP_LIST[@]}" ; do
+        if ! add_user_to_group "$USER" "$group" ; then
+            return 1
+        fi
+    done
+}
+
 _install_ppas() {
     local needsUpdate="0"
     for ppa_spec in "${PPA_LIST[@]}" ; do
@@ -394,6 +408,11 @@ main() {
 
     if ! _make_links; then
         ebad "error creating links, premature exit"
+        return 1
+    fi
+
+    if ! _add_user_to_groups ; then
+        ebad "error adding user to groups, premature exit"
         return 1
     fi
 

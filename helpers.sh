@@ -81,6 +81,13 @@ split() {
    printf '%s\n' "${arr[@]}"
 }
 
+trim_string() {
+    # Usage: trim_string "   example   string    "
+    : "${1#"${1%%[![:space:]]*}"}"
+    : "${_%"${_##*[![:space:]]}"}"
+    printf '%s\n' "$_"
+}
+
 PATH_append() {
     [ -z "$1" ] && return
 
@@ -376,4 +383,34 @@ update() {
         "sudo apt-get update -qqy" \
         "APT (update)"
 
+}
+
+user_in_group() {
+    declare -r user="$1"
+    declare -r group="$2"
+
+    group_list=$(groups "$user" | cut -d: -f2)
+    group_list=$(trim_string "$group_list")
+    group_list=$(split "$group_list" " ")
+
+    for grp in $group_list ; do
+        if [ "$grp" = "$group" ] ; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+add_user_to_group() {
+    declare -r user="$1"
+    declare -r group="$2"
+
+    if ! user_in_group "$user" "$group" ; then
+        echo "user $user not in $group"
+        sudo usermod -a -G "$group" "$user"
+        estatus "Added $user to $group group"
+    else
+        egood "User $user already in $group group"
+    fi
 }

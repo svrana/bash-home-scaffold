@@ -402,11 +402,20 @@ user_in_group() {
     return 1
 }
 
+group_exists() {
+    declare -r group="$1"
+    grep -q -E "^$group:" /etc/group
+}
+
 add_user_to_group() {
     declare -r user="$1"
     declare -r group="$2"
 
     if ! user_in_group "$user" "$group" ; then
+        if ! group_exists "$group" ; then
+            sudo groupadd "$group"
+            estatus "Created group $group"
+        fi
         echo "user $user not in $group"
         sudo usermod -a -G "$group" "$user"
         estatus "Added $user to $group group"

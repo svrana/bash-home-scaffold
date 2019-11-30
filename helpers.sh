@@ -194,23 +194,6 @@ show_spinner() {
     local i=0
     local frameText=""
 
-    # Note: In order for the Travis CI site to display
-    # things correctly, it needs special treatment, hence,
-    ## the "is Travis CI?" checks.
-    if [ "$TRAVIS" ]; then
-        # Provide more space so that the text hopefully
-        # doesn't reach the bottom line of the terminal window.
-        #
-        # This is a workaround for escape sequences not tracking
-        # the buffer position (accounting for scrolling).
-        #
-        # See also: https://unix.stackexchange.com/a/278888
-        printf "\n\n\n"
-        tput cuu 3
-
-        tput sc
-    fi
-
     # Display spinner while the commands are being executed.
     while kill -0 "$PID" &>/dev/null; do
         if [ "$TRAVIS" ]; then
@@ -224,9 +207,7 @@ show_spinner() {
         sleep 0.2
 
         # Clear frame text.
-        if [ "$TRAVIS" ]; then
-            tput rc
-        else
+        if [ -z "$TRAVIS" ]; then
             printf "\r"
         fi
     done
